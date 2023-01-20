@@ -1,0 +1,9 @@
+server:
+    port: 9001
+spring:
+    jpa:
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
+    datasource:
+        url: "jdbc:postgresql://10.89.18.35:5432/dev-odin?currentSchema=goanywhere"
+        username: dev-odin
+        password: hgEw68dGWMMPwA8Z

@@ -1,0 +1,40 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  annotations:
+    client.knative.dev/user-image: bootstrap-spike
+    run.googleapis.com/ingress: all
+  labels:
+    cloud.googleapis.com/location: australia-southeast1
+  name: bootstrap-spike
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: '1'
+        autoscaling.knative.dev/maxScale: '1'
+        run.googleapis.com/client-name: cloud-console
+        run.googleapis.com/cpu-throttling: 'true' #set this value to false if CPU has to be always ON
+        run.googleapis.com/vpc-access-egress: all-traffic
+        run.googleapis.com/vpc-access-connector: projects/scg-net-stg-0/locations/australia-southeast1/connectors/scg-net-stg-vpc-connector
+    spec:
+      serviceAccountName: kong-hris-events-cloudrun@scg-hip-dev.iam.gserviceaccount.com
+      containerConcurrency: 1000 #Set it to zero to serve maximum of 80 requests per container
+      containers:
+        image: asia.gcr.io/scg-container-registry/ffis/bootstrap-spike:local-1
+        ports:
+          - containerPort: 9001
+            name: http1
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1024Mi
+      timeoutSeconds: 3600
+  traffic:
+    - latestRevision: true
+      percent: 100
+    # # traffic splitting for canary release
+    # - revisionName: 'APP_NAME-<replace-with-latest>'
+    #   percent: 10
+    # - revisionName: 'APP_NAME-<replace-with-stable>'
+    #   percent: 90

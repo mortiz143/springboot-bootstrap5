@@ -1,34 +1,47 @@
 package com.hendisantika.service;
 
-import com.hendisantika.model.CbaStatusReportDTO;
-import com.hendisantika.model.CbaStatusReportFileDTO;
-import com.hendisantika.model.FilesReceivedDto;
+import com.hendisantika.model.*;
+import com.hendisantika.repository.CbaStatusReportRepository;
+import com.hendisantika.repository.ChartRepository;
+import com.hendisantika.repository.FilesReceivedRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class CbaStatusReportsService {
 
-    public List<CbaStatusReportDTO> getCbaStatusReportDTOS() {
-        List<CbaStatusReportDTO> cbaStatusReportDTOS = new ArrayList();
-        CbaStatusReportDTO dto =CbaStatusReportDTO.builder()
-                .rowId("1OPR")
-                .sourceSystem("JDE")
-                .sourceFilename("OPR_AP00000046_01000_121029125516.txt")
-                .receiveTime("14/NOV/22 12:23:00")
-                .deliveryTime("14/NOV/22 12:23:00")
-                .fileDeliveryStatus("SUCCESS")
-                .lastStatRepCode("(02) Processed")
-                .lastStatRepTime("14/NOV/22 12:23:00").build();
-        cbaStatusReportDTOS.add(dto);
-        cbaStatusReportDTOS.add(dto.toBuilder().rowId("row2").sourceSystem("Peoplesoft")
-                .sourceFilename("PSF_1329169_WKLREIM11270_2022-11-30-10-19-41_CBA020.ABA.gpg").build());
-        cbaStatusReportDTOS.add(dto.toBuilder().rowId("row3").sourceSystem("Quantum")
-                .sourceFilename("SGCBA0035823011.gpg").build());
-        return cbaStatusReportDTOS;
+    @Autowired
+    private CbaStatusReportRepository cbaStatusReportRepository;
 
+    @Autowired
+    private FilesReceivedRepository filesReceivedRepository;
+
+    @Autowired
+    private ChartRepository chartRepository;
+
+    public List<CbaStatusReportDTO> getCbaStatusReportDTOS() {
+
+        List<CbaStatusReportDTO> cbaStatusReportDTOS = new ArrayList();
+        cbaStatusReportRepository.findAll().forEach(entity -> {
+            CbaStatusReportDTO dto =CbaStatusReportDTO.builder()
+                    .rowId(entity.getRowId().toString())
+                    .sourceSystem(entity.getSourceSystem())
+                    .sourceFilename(entity.getSourceFilename())
+                    .receiveTime(entity.getReceiveTime())
+                    .deliveryTime(entity.getDeliveryTime())
+                    .fileDeliveryStatus(entity.getFileDeliveryStatus())
+                    .lastStatRepCode(entity.getLastStatRepCode())
+                    .lastStatRepTime(entity.getLastStatRepTime()).build();
+            cbaStatusReportDTOS.add(dto);
+        });
+        return cbaStatusReportDTOS;
     }
 
     public List<CbaStatusReportFileDTO> getReportFilesBySourceFilename(String sourceFilename) {
@@ -47,22 +60,35 @@ public class CbaStatusReportsService {
         return cbaStatusReportFileDTOS;
     }
 
-    public List<FilesReceivedDto> getLatestFiveFilesReceived() {
-        List<FilesReceivedDto> receivedDtos = new ArrayList<>();
+    public Map<String, List<FilesReceivedDto>> getLatestFiveFilesReceived() {
+        List<FilesReceivedDto> okList = new ArrayList<>();
+        List<FilesReceivedDto> errorList = new ArrayList<>();
+
+        filesReceivedRepository.getFiveLatestFiles().forEach(entity -> {
+            okList.add(toDto(entity));
+        });
+        filesReceivedRepository.getFiveFailedLatestFiles().forEach(entity -> {
+            errorList.add(toDto(entity));
+        });
+
+        return new HashMap<String, List<FilesReceivedDto>>() {
+            {
+                put("okList", okList);
+                put("errorList", errorList);
+            }
+        };
+    }
+
+    private FilesReceivedDto toDto(FilesReceivedEntity entity) {
         FilesReceivedDto receivedDto = FilesReceivedDto.builder()
-                .rowId("row1")
-                .jobLog(jobLog.replaceAll("(\r\n|\n)", "<br />"))
-                .filelogId("1000000005085")
-                .status("success")
-                .dateReceived("30-NOV-2022 13:50:14")
-                .timeSince("14 hours ago")
-                .sourceFilename("West_CC_Account_20221130.txt").build();
-        receivedDtos.add(receivedDto);
-        receivedDtos.add(receivedDto.toBuilder().sourceFilename("West_HR_20221130.txt").filelogId("1000000005085").build());
-        receivedDtos.add(receivedDto.toBuilder().sourceFilename("West_CC_BU_20221130.txt").filelogId("1000000005084").build());
-        receivedDtos.add(receivedDto.toBuilder().sourceFilename("user202211301111.csv").filelogId("1000000005083").build());
-        receivedDtos.add(receivedDto.toBuilder().sourceFilename("PPCBA0003323011.pgp").filelogId("1000000005082").build());
-        return receivedDtos;
+                .rowId(entity.getRowId())
+                .jobLog(entity.getJobLog().replaceAll("(\r\n|\n)", "<br />"))
+                .filelogId(entity.getFilelogId())
+                .status(entity.getStatus())
+                .dateReceived(entity.getDateReceived())
+                .timeSince(entity.getTimeSince())
+                .sourceFilename(entity.getSourceFilename()).build();
+        return receivedDto;
     }
 
     static String testdata = "CommBiz Status Message\n" +
@@ -142,4 +168,23 @@ public class CbaStatusReportsService {
             "11/24/22 2:57:44 PM           INFO      Finished project 'Peoplesoft-IPAD-Torata'\n" +
             "11/24/22 2:57:44 PM           INFO      Closed the connection\n" +
             "11/24/22 2:57:44 PM           INFO      End Date and Time: 11/24/22 2:57:44 PM\n";
+
+    public Map<String, Object> getDashboardChart() {
+
+        return new HashMap<String, Object>() {
+            {
+                String[] days = new String[7];
+                Integer[] total = new Integer[7];
+                Iterable<ChartEntity> chart = chartRepository.findAll();
+                int x = 0;
+                for(ChartEntity entity:chart) {
+                    days[x] = entity.getDays();
+                    total[x] = entity.getTotal();
+                    x++;
+                }
+                put("days", days);
+                put("total", total);
+            }
+        };
+    }
 }

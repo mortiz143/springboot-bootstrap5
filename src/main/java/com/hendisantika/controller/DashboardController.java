@@ -1,5 +1,6 @@
 package com.hendisantika.controller;
 
+import com.hendisantika.model.FilesReceivedDto;
 import com.hendisantika.service.CbaStatusReportsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 public class DashboardController {
@@ -26,18 +29,20 @@ public class DashboardController {
     @GetMapping("/")
     public String index(Model model) {
         model.addAttribute("datetime", new Date());
-        model.addAttribute("username", "@mortiz");
+        model.addAttribute("username", "@integration");
         model.addAttribute("projectname", "WebApp");
         model.addAttribute("mode", appMode);
-        model.addAttribute("filesReceived", cbaStatusReportsService.getLatestFiveFilesReceived());
-        model.addAttribute("filesFailures", cbaStatusReportsService.getLatestFiveFilesReceived());
 
+        Map<String, List<FilesReceivedDto>> files = cbaStatusReportsService.getLatestFiveFilesReceived();
+        model.addAttribute("filesReceived", files.get("okList"));
+        model.addAttribute("filesFailures", files.get("errorList"));
+        model.addAttribute("chart", cbaStatusReportsService.getDashboardChart());
         return "dashboard";
     }
 
     @ResponseBody
     @GetMapping("/joblog/{filelogId}")
     public String index(@PathVariable String filelogId) {
-        return cbaStatusReportsService.getLatestFiveFilesReceived().get(0).getJobLog();
+        return "";
     }
 }

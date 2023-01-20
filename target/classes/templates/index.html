@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="" name="description">
+    <meta content="Mark Otto, Jacob Thornton, and Bootstrap contributors" name="author">
+    <meta content="Hugo 0.87.0" name="generator">
+    <title>Top navbar example · Bootstrap v5.1</title>
+
+    <link href="https://getbootstrap.com/docs/5.1/examples/navbar-static/" rel="canonical">
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.1.0/css/bootstrap.css}"/>
+
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+
+
+    <!-- Custom styles for this template -->
+    <link href="navbar-top.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Top navbar</a>
+        <button aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation"
+                class="navbar-toggler" data-bs-target="#navbarCollapse" data-bs-toggle="collapse" type="button">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                    <a aria-current="page" class="nav-link active" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link</a>
+                </li>
+                <li class="nav-item">
+                    <a aria-disabled="true" class="nav-link disabled" href="#" tabindex="-1">Disabled</a>
+                </li>
+            </ul>
+            <form class="d-flex">
+                <input aria-label="Search" class="form-control me-2" placeholder="Search" type="search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+        </div>
+        <a class="navbar-brand" href="#" th:text="${username}">Project name</a>
+    </div>
+</nav>
+
+<main class="container">
+    <div class="bg-light p-5 rounded">
+        <h1>Navbar example</h1>
+        <h3 th:text="'Welcome to basic Bootstrap with Spring Boot created by ' + ${username}"></h3>
+        <p th:text="'This date example  ' + ${#dates.format(datetime, 'dd MMM yyyy HH:mm')}"></p>
+        <p> is a quick exercise to illustrate how the default, static navbar and fixed to top navbar work.
+            It includes the responsive CSS and HTML, so it also adapts to your viewport and device.</p>
+        <p class="lead">This example is a quick exercise to illustrate how the top-aligned navbar works. As you scroll,
+            this navbar remains in its original position and moves with the rest of the page.</p>
+        <a class="btn btn-lg btn-primary" href="https://getbootstrap.com/docs/5.1/components/navs-tabs/" role="button"
+           target="_blank">View navbar docs &raquo;</a>
+    </div>
+</main>
+<script th:href="@{/webjars/bootstrap/5.1.0/js/bootstrap.js}"></script>
+</body>
+</html>

@@ -81,7 +81,7 @@
                 <th scope="col">File Delivery Status</th>
                 <th scope="col">Last Status Rep Code</th>
                 <th scope="col">Last Status Rep Time</th>
-                <th scope="col">Status Report(s)</th>
+                <!--th scope="col">Status Report(s)</th-->
             </tr>
             </thead>
             <tbody>
@@ -93,7 +93,7 @@
                 <td th:text="${report.fileDeliveryStatus}" />
                 <td th:text="${report.lastStatRepCode}" />
                 <td th:text="${report.lastStatRepTime}" />
-                <td><a th:href="'/reports/'+${report.sourceFilename}" class="badge badge-primary">files</a></td>
+                <!--td><a th:href="'/reports/'+${report.sourceFilename}" class="badge badge-primary">files</a></td-->
             </tr>
             </tbody>
         </table>
